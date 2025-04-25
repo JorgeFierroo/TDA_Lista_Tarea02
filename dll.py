@@ -4,13 +4,7 @@ from sqlalchemy.orm import sessionmaker, relationship
 from datetime import datetime
 from enum import Enum as PyEnum
 from sqlalchemy import create_engine
-
-# Definir base de datos y motor de conexión
-SQLALCHEMY_DATABASE_URL = "sqlite:///./vuelos.db"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
-
-# Definir clase base para el modelo SQLAlchemy
-Base = declarative_base()
+from database import *
 
 # Definir el Enum de los estados de vuelo
 class EstadoVuelo(PyEnum):
@@ -34,8 +28,14 @@ class Vuelo(Base):
 # Crear las tablas en la base de datos
 Base.metadata.create_all(bind=engine)
 
-# Crear la sesión de la base de datos
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# Dependencia para obtener sesión
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 
 class _ListaVuelos:
     """A base class providing a doubly linked list representation."""
